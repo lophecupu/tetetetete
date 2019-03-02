@@ -1,28 +1,25 @@
 <?php
-
-// Add your API key here:
-$google_key = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-
-function shorten($url)
-{
-    $gurl = "https://www.googleapis.com/urlshortener/v1/url?key=" . $GLOBALS['google_key'];
-    $url  = json_encode(array("longUrl" => $url));
-    $ch   = curl_init();
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_URL, $gurl);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $url);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array("Accept: appliaction/json", "Content-Type: application/json"));
-    
-    $r = json_decode(curl_exec($ch));
-    return $r->id;
+/* returns the shortened url */
+function get_bitly_short_url($url,$login='XXXXXXXXXXXXXXX',$appkey='XXXXXXXXXXXXXXXXX',$format='txt') {
+	$connectURL = 'http://api.bit.ly/v3/shorten?login='.$login.'&apiKey='.$appkey.'&uri='.urlencode(trim(preg_replace('/\s\s+/', ' ', $url))).'&format='.$format;
+	return curl_get_result($connectURL);
 }
-
+/* returns a result form url */
+function curl_get_result($url) {
+	$ch = curl_init();
+	$timeout = 5;
+	curl_setopt($ch,CURLOPT_URL,$url);
+	curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+	curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,$timeout);
+	$data = curl_exec($ch);
+	curl_close($ch);
+	return $data;
+}
 ?>
 
 <html>
     <head>
-        <title>Bulk goo.gl shorter</title>
+        <title>Bulk bit.ly shorter</title>
 
         <!-- Including Bootstrap files for theme -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -32,7 +29,7 @@ function shorten($url)
     <body>
         <div style="max-width:360px;margin-left: auto; margin-right: auto;">
             <center>
-                <h1>Bulk goo.gl shporter</h1>
+                <h1>Bulkbit.ly shporter</h1>
                 <form action="index.php" method="POST">
                     <textarea name="url" placeholder="Type your URLs here, onre line each" class="form-control"></textarea>
                     <br/>
@@ -59,7 +56,7 @@ function shorten($url)
                     foreach ($textAr as $line)
                     {
                         echo '<tr>
-                                <td>'.shorten($line).'</td>
+                                <td>'.get_bitly_short_url($line).'</td>
                                 <td>'.$line.'</td>
                             </tr>';
                     }
